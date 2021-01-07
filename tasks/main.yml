@@ -24,12 +24,34 @@
     owner: root
     group: root
 
+- name: Generate SSL dhparam if configured
+  command:
+    cmd: "openssl dhparam -out {{ nginx_ssl_dhparam }} 4096"
+    creates: "{{ nginx_ssl_dhparam }}"
+  when: nginx_ssl_dhparam is defined
+
+- name: Create sites directory for storing different server configs
+  file:
+    path: /etc/nginx/sites/
+    state: directory
+    mode: 0755
+
 - name: Set nginx config
   template:
     src: templates/nginx.conf.j2
     dest: /etc/nginx/nginx.conf
     validate: /usr/sbin/nginx -t -c %s
   notify: Enable and start nginx
+
+- name: Generate site config for each served domain
+  template:
+    src: site.conf.j2
+    dest: "/etc/nginx/sites/{{ served_domain.identifier}}.conf"
+  when: not served_domain.get('nginx_skip_server', False)
+  notify: Enable and start nginx
+  loop: "{{ nginx_served_domains }}"
+  loop_control:
+    loop_var: served_domain
 
 - name: Place template PAM nginx file
   template:

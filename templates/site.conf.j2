@@ -1,0 +1,92 @@
+#{{ ansible_managed }}
+#jinja2: lstrip_blocks: True
+{% macro fix_domain(domain) %}{#- remove leading and following dot -#}
+    {%- if domain[0] == '.' and domain[-1] == '.' -%}
+        {{ domain[1:-1] }}
+    {%- elif domain[0] == '.' -%}
+        {{ domain[1:] }}
+    {%- elif domain[-1] == '.' -%}
+        {{ domain[:-1] }}
+    {%- else -%}
+        {{ domain }}
+    {%- endif %}
+{%- endmacro %}
+{% macro build_domain_list(domain, separator) %}
+    {%- if domain[-1] == '.' -%}{#- domain is already a full qualified domain name -#}
+        {#- output domain name with appended prefix and suffix, with given separator and without leading dot -#}
+        {{- separator }}{{ domain[:-1] -}}
+    {%- else -%}
+        {% for prefix in domain_prefixes -%}{#- append all domain prefixes -#}
+            {%- for suffix in domain_suffixes -%}{#- append all domain suffixes -#}
+                {#- output domain name with appended prefix and suffix, with given separator -#}
+                {{- separator }}{{ fix_domain( [prefix,domain,suffix] | join('.') ) -}}
+            {%- endfor %}
+        {%- endfor %}
+    {%- endif -%}
+{% endmacro -%}
+
+   server {
+       {% for header in served_domain.headers | default([]) -%}
+       add_header {{ header }};
+       {% endfor %}
+
+       {% if served_domain.return is defined -%}
+       return {{ served_domain.return }};
+       {%- endif %}
+       {%- if served_domain.index_files is defined -%}
+       index{% for index_var in served_domain.index_files %} {{ index_var }}{% endfor %};
+       {% endif %}
+       {%- if served_domain.root is defined -%}
+       root {{ served_domain.root }};
+       {% endif %}
+       {%- if served_domain.https | default(False) -%}
+       listen 443 ssl{% if served_domain.enable_http2 is defined and served_domain.enable_http2 %} http2 {% endif %}{% if served_domain.default_server %} default_server {% endif %};
+       {%- if served_domain.ipv6 | default(False) -%}
+       listen [::]:443 ssl{% if served_domain.enable_http2 is defined and served_domain.enable_http2 %} http2 {% endif %};
+       {% endif -%}
+       ssl_certificate     {{ served_domain.fullchain_path | default(nginx_default_fullchain_path) }};
+       ssl_certificate_key {{ served_domain.privkey_path | default(nginx_default_privkey_path) }};
+       {% else -%}
+       listen 80 {% if served_domain.default_server %} default_server{% endif %};
+       {% endif -%}
+       server_name
+       {%- if served_domain.domains is defined and served_domain.domains|length > 0  -%}
+           {%- for domain in served_domain.domains -%}
+               {{- build_domain_list( domain, ' ' ) -}}
+           {%- endfor -%};
+       {% else %}
+           _;
+       {%- endif %}
+       {%- if served_domain.client_max_body_size is defined -%}
+           client_max_body_size {{ served_domain.client_max_body_size }};
+       {%- endif %}
+       {%- if served_domain.fastcgi_buffers is defined -%}
+           fastcgi_buffers {{ served_domain.fastcgi_buffers }}
+       {%- endif %}
+       {%- for configuration in served_domain.configurations | default([]) %}
+           {{- configuration.content | indent( width=12) }}
+       {%- endfor %}
+       {%- for location_var in served_domain.locations | default([]) %}
+
+       location {{ location_var.condition }} {
+           {% if location_var.ignore_access is defined -%}
+               {%- for ip_range in served_domain.allowed_ip_ranges -%}
+               allow {{ ip_range }};
+               {%- endfor %}
+               deny all;
+           {%- endif %}
+           {{- location_var.content | indent( width=12) }}
+       }
+   {% endfor -%}
+   }
+
+   {%- for upstream in served_domain.upstreams | default([]) -%}
+   upstream {{ upstream.name }} {
+       {% if upstream.path is defined %}
+       server {{ upstream.path }};
+       {% else %}
+       {{- upstream.content | indent( width=8 )}}
+       {% endif %}
+
+   }
+   {% endfor %}

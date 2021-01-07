@@ -14,6 +14,15 @@ nginx_default_type: "application/octet-stream"
 nginx_ssl_protocols: "TLSv1 TLSv1.1 TLSv1.2"
 nginx_ssl_ciphers: 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH'
 nginx_ssl_prefer_server_ciphers: "on"
+nginx_ssl_ecdh_curve: secp384r1 # Requires nginx >= 1.1.0
+nginx_ssl_session_timeout:  10m
+nginx_ssl_session_cache: shared:SSL:10m
+nginx_ssl_session_tickets: "off" # Requires nginx >= 1.5.9
+nginx_ssl_stapling: "on" # Requires nginx >= 1.3.7
+nginx_ssl_stapling_verify: "on" # Requires nginx => 1.3.7
+
+nginx_resolvers: []
+
 nginx_log_format: |
         '[$time_iso8601] >>$upstream_addr <<$remote_addr - '
         '$status $request_method $scheme://$host$request_uri '
@@ -23,12 +32,14 @@ nginx_log_format: |
 nginx_access_log: /var/log/nginx/access.log
 nginx_error_log: /var/log/nginx/error.log
 nginx_gzip: "on"
+nginx_gzip_vary: "on"
 nginx_gzip_disable: "msie6"
 nginx_gzip_types: "text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript"
+nginx_gzip_proxied: "expired no-cache no-store private auth"
 nginx_server_names_hash_bucket_size: 64
 nginx_install_full_package: false
-domain_suffixes:
+nginx_domain_suffixes:
   - ""
-domain_prefixes:
+nginx_domain_prefixes:
   - ""
 nginx_allow_shadow: False

@@ -1,0 +1,10 @@
+if (-f {{ nginx_errorpages }}/_sites/$server_name-maintenance-page_on.html)
+{
+    return 503;
+}
+error_page 503 @maintenance;
+location @maintenance
+{
+    rewrite ^(.*)$ /$server_name-maintenance-page_on.html break;
+    root {{ nginx_errorpages }}/_sites;
+}

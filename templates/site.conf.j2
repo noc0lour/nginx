@@ -33,6 +33,9 @@
        {% if served_domain.return is defined -%}
        return {{ served_domain.return }};
        {%- endif %}
+       ## Nginx Maintenance Mode
+       include maintenance_mode.conf;
+
        {%- if served_domain.index_files is defined -%}
        index{% for index_var in served_domain.index_files %} {{ index_var }}{% endfor %};
        {% endif %}

@@ -2,6 +2,8 @@
 nginx_user: www-data
 nginx_worker_processes: auto
 nginx_pid: /run/nginx.pid
+nginx_basedir: /var/www
+nginx_errorpages: "{{ nginx_basedir }}/error_pages"
 nginx_worker_connections: 768
 nginx_sendfile: "on"
 nginx_tcp_nopush: "on"

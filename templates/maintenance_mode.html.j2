@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Temporary Maintenance</title>
+<meta name="description" content="Temporary Maintenance">
+<link href="https://www.gnuradio.org/css/bootstrap.min.47b3acff691035d3adaf61da9dae90ca8712f1d93d47fd22a195280ad54dbd11.css" rel="stylesheet">
+</head>
+<body class="py-5" onload="javascript:loadDomain();">
+<!-- Error Page Content -->
+<div class="container">
+    <div class="hero text-center my-4">
+        <h1 class="display-5 fw-bold">Temporary Maintenance</h1>
+        <p class="lead">The web server is currently undergoing some maintenance for  <em><span id="display-domain"></span></em>.
+        </p>
+        <p><btn onclick=javascript:reloadPage(); class="btn btn-outline-success btn-lg">Try This Page Again</a></btn>
+    </div>
+
+    <div class="content">
+        <div class="row  justify-content-center py-3">
+            <div class="col-md-6">
+                <div class="my-5 p-5 card">
+                    <h3>What happened?</h3>
+                    <p class="fs-5">Servers and websites need regular maintenance just like a car to keep them up and running smoothly.</p>
+                </div>
+                <div class="my-5 p-5 card">
+                    <h3>What can I do?</h3>
+                    <p class="fs-4">If you're a site visitor</p>
+                    <p>If you need immediate assistance, please send us an email instead. We apologize for any inconvenience.</p>
+                    <p class="fs-4">If you're the site owner</p>
+                    <p>The maintenance period will mostly likely be very brief, the best thing to do is to check back in a few minutes and everything will probably be working normal again.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function loadDomain() {
+        var display = document.getElementById("display-domain");
+        display.innerHTML = document.domain;
+    }
+    // CTA button actions
+    function goToHomePage() {
+        window.location = '/';
+    }
+    function reloadPage() {
+        document.location.reload(true);
+    }
+</script>
+</body>
+</html>

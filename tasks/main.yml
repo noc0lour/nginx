@@ -42,6 +42,36 @@
     dest: /etc/nginx/nginx.conf
   notify: Enable and start nginx
 
+
+- name: Create nginx error_pages directory structure
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    - "{{ nginx_errorpages }}"
+    - "{{ nginx_errorpages }}/_sites"
+
+- name: Copy error_pages to directory
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ nginx_errorpages }}/{{ item }}"
+  loop:
+    - maintenance_mode.html
+
+- name: Copy maintenance_mode snippet to config
+  template:
+    src: maintenance_mode.conf.j2
+    dest: /etc/nginx/maintenance_mode.conf
+    mode: 0644
+
+- name: Copy maintenance.sh script to /usr/local/sbin
+  template:
+    src: maintenance.sh.j2
+    dest: /usr/local/sbin/maintenance.sh
+    mode: 0750
+
+
 - name: Generate site config for each served domain
   template:
     src: site.conf.j2
@@ -75,6 +105,7 @@
   when: not nginx_allow_shadow
   changed_when: nginx_allow_shadow_remove.rc != 6
   failed_when: nginx_allow_shadow_remove.rc != 6 and nginx_allow_shadow_remove.rc != 0
+
 
 - name: Create script directory
   file:

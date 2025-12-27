@@ -14,22 +14,21 @@ nginx_server_tokens: "off"
 nginx_default_type: "application/octet-stream"
 
 nginx_ssl_protocols: "TLSv1 TLSv1.1 TLSv1.2"
-nginx_ssl_ciphers: 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH'
+nginx_ssl_ciphers: "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH"
 nginx_ssl_prefer_server_ciphers: "on"
 nginx_ssl_ecdh_curve: secp384r1 # Requires nginx >= 1.1.0
-nginx_ssl_session_timeout:  10m
+nginx_ssl_session_timeout: 10m
 nginx_ssl_session_cache: shared:SSL:10m
 nginx_ssl_session_tickets: "off" # Requires nginx >= 1.5.9
 nginx_ssl_stapling: "on" # Requires nginx >= 1.3.7
 nginx_ssl_stapling_verify: "on" # Requires nginx => 1.3.7
 
 nginx_resolvers: []
-
 nginx_log_format: |
-        '[$time_iso8601] >>$upstream_addr <<$remote_addr - '
-        '$status $request_method $scheme://$host$request_uri '
-        '>>$bytes_sent($body_bytes_sent)bytes '
-        '<<"$http_referer" -- <$http_user_agent> $request'
+  '[$time_iso8601] >>$upstream_addr <<$remote_addr - '
+  '$status $request_method $scheme://$host$request_uri '
+  '>>$bytes_sent($body_bytes_sent)bytes '
+  '<<"$http_referer" -- <$http_user_agent> $request'
 
 nginx_access_log: /var/log/nginx/access.log
 nginx_error_log: /var/log/nginx/error.log
@@ -44,4 +43,4 @@ nginx_domain_suffixes:
   - ""
 nginx_domain_prefixes:
   - ""
-nginx_allow_shadow: False
+nginx_allow_shadow: false

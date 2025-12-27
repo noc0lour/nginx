@@ -1,12 +1,12 @@
 ---
 - name: Install apt-transport-https
-  package:
+  ansible.builtin.package:
     name:
       - apt-transport-https
       - gnupg
 
 - name: Add repository
-  deb822_repository:
+  ansible.builtin.deb822_repository:
     name: nginx-repo
     uris: https://nginx.org/packages/mainline/debian
     suites: "{{ ansible_distribution_release }}"
@@ -14,70 +14,68 @@
     signed_by: https://nginx.org/keys/nginx_signing.key
 
 - name: Install nginx package
-  apt:
+  ansible.builtin.apt:
     name: "nginx{% if nginx_install_full_package %}-full{% endif %}"
 
 - name: Create config file for blocked IP addresses
-  copy:
+  ansible.builtin.copy:
     force: false
     src: deny.conf
     dest: /etc/nginx/conf.d/deny.conf
-    mode: 0644
+    mode: "0644"
     owner: root
     group: root
 
 - name: Generate SSL dhparam if configured
-  command:
+  ansible.builtin.command:
     cmd: "openssl dhparam -out {{ nginx_ssl_dhparam }} 4096"
     creates: "{{ nginx_ssl_dhparam }}"
   when: nginx_ssl_dhparam is defined
 
 - name: Create sites directory for storing different server configs
-  file:
+  ansible.builtin.file:
     path: /etc/nginx/sites/
     state: directory
-    mode: 0755
+    mode: "0755"
 
 - name: Set nginx config
-  template:
+  ansible.builtin.template:
     src: templates/nginx.conf.j2
     dest: /etc/nginx/nginx.conf
   notify: Enable and start nginx
 
-
 - name: Create nginx error_pages directory structure
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: 0755
+    mode: "0755"
   loop:
     - "{{ nginx_errorpages }}"
     - "{{ nginx_errorpages }}/_sites"
 
 - name: Copy error_pages to directory
-  template:
+  ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "{{ nginx_errorpages }}/{{ item }}"
   loop:
     - maintenance_mode.html
 
 - name: Copy maintenance_mode snippet to config
-  template:
+  ansible.builtin.template:
     src: maintenance_mode.conf.j2
     dest: /etc/nginx/maintenance_mode.conf
-    mode: 0644
+    mode: "0644"
 
 - name: Copy maintenance.sh script to /usr/local/sbin
-  template:
+  ansible.builtin.template:
     src: maintenance.sh.j2
     dest: /usr/local/sbin/maintenance.sh
-    mode: 0750
-
+    mode: "0750"
 
 - name: Generate site config for each served domain
-  template:
+  ansible.builtin.template:
     src: site.conf.j2
-    dest: "/etc/nginx/sites/{{ served_domain.identifier}}.conf"
+    dest: "/etc/nginx/sites/{{ served_domain.identifier }}.conf"
   when: not served_domain.get('nginx_skip_server', False)
   notify: Enable and start nginx
   loop: "{{ nginx_served_domains }}"
@@ -85,15 +83,15 @@
     loop_var: served_domain
 
 - name: Place template PAM nginx file
-  template:
+  ansible.builtin.template:
     src: templates/pam_service_file.j2
     dest: "/etc/pam.d/{{ nginx_pam_service_name | mandatory }}"
   when: nginx_pam_rules is defined
   notify: Enable and start nginx
 
 - name: Allow www-data to access shadow for PAM
-  user:
-    append: True
+  ansible.builtin.user:
+    append: true
     groups: shadow
     name: www-data
   when: nginx_allow_shadow
@@ -102,24 +100,23 @@
 # stupid shell workaround needed since ansible still lacks an option to remove users from groups
 # see also: https://github.com/ansible/ansible/issues/11024
 - name: Forbid www-data shadow group access # noqa 305
-  shell: deluser www-data shadow
+  ansible.builtin.shell: deluser www-data shadow
   register: nginx_allow_shadow_remove
   # when: not nginx_allow_shadow
   when: false
   changed_when: nginx_allow_shadow_remove.rc != 6
   failed_when: nginx_allow_shadow_remove.rc != 6 and nginx_allow_shadow_remove.rc != 0
 
-
 - name: Create script directory
-  file:
+  ansible.builtin.file:
     path: /etc/nginx/script.d
     state: directory
 
 - name: Copy scripts
-  copy:
+  ansible.builtin.copy:
     src: "{{ item }}"
     dest: /etc/nginx/script.d/{{ item }}
-    mode: 0755
+    mode: "0755"
     owner: root
     group: root
   with_items:

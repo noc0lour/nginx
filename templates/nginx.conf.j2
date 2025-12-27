@@ -58,10 +58,10 @@ http {
     ssl_stapling {{ nginx_ssl_stapling -}};
     ssl_stapling_verify {{ nginx_ssl_stapling_verify -}};
 
-    {% if nginx_resolvers %}
-    resolver {{ nginx_resolvers | join (' ') }} valid=300s;
+    {%- if nginx_resolvers -%}
+    resolver {{ nginx_resolvers | ansible.utils.ipaddr | ansible.utils.ipwrap | join (' ') }} valid=300s;
     resolver_timeout 5s;
-    {% endif %}
+    {%- endif -%}
 
     log_format ext_combined {{ nginx_log_format }};
 

@@ -36,6 +36,7 @@ events {
 
 http {
     include /etc/nginx/conf.d/deny.conf;
+    include /etc/nginx/conf.d/cf-real-ip.conf;
 
     sendfile {{ nginx_sendfile -}};
     tcp_nopush {{ nginx_tcp_nopush -}};
@@ -43,7 +44,6 @@ http {
     keepalive_timeout {{ nginx_keepalive_timeout -}};
     types_hash_max_size {{ nginx_types_hash_max_size -}};
     server_tokens {{ nginx_server_tokens -}};
-    server_names_hash_bucket_size {{ nginx_server_names_hash_bucket_size }};
     include /etc/nginx/mime.types;
     default_type {{ nginx_default_type -}};
 
@@ -55,13 +55,13 @@ http {
     ssl_session_timeout {{ nginx_ssl_session_timeout -}};
     ssl_session_cache {{ nginx_ssl_session_cache -}};
     ssl_session_tickets {{ nginx_ssl_session_tickets -}};
-    ssl_stapling {{ nginx_ssl_stapling -}};
-    ssl_stapling_verify {{ nginx_ssl_stapling_verify -}};
 
-    {%- if nginx_resolvers -%}
+    disable_symlinks off;
+
+    {% if nginx_resolvers -%}
     resolver {{ nginx_resolvers | ansible.utils.ipaddr | ansible.utils.ipwrap | join (' ') }} valid=300s;
     resolver_timeout 5s;
-    {%- endif -%}
+    {%- endif %}
 
     log_format ext_combined {{ nginx_log_format }};
 

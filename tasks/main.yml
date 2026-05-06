@@ -26,6 +26,23 @@
     owner: root
     group: root
 
+- name: Loop through all additional files to create base dirs
+  ansible.builtin.file:
+    path: "/etc/nginx/{{ item.dir }}"
+    owner: root
+    group: root
+    state: directory
+  loop: "{{ nginx_files }}"
+
+- name: Create files with the content specified
+  ansible.builtin.copy:
+    dest: "/etc/nginx/{{ item.0.dir }}/{{ item.1.name }}"
+    content: "{{ item.1.content }}"
+    owner: root
+    group: root
+  loop: "{{ nginx_files | subelements('files') }}"
+
+
 - name: Generate SSL dhparam if configured
   ansible.builtin.command:
     cmd: "openssl dhparam -out {{ nginx_ssl_dhparam }} 4096"

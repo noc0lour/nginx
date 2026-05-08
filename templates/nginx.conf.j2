@@ -63,9 +63,9 @@ http {
     resolver_timeout 5s;
     {%- endif %}
 
-    log_format ext_combined {{ nginx_log_format }};
+    {# log_format ext_combined {{ nginx_log_format }}; #}
 
-    access_log {{ nginx_access_log }} ext_combined;
+    access_log {{ nginx_access_log }};
     error_log {{ nginx_error_log -}};
 
     gzip {{ nginx_gzip -}};
